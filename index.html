@@ -1,0 +1,120 @@
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>D3</title>
+  
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/d3.geo.projection.v0.min.js" charset="utf-8"></script>
+
+        <style type="text/css">
+		
+	path{
+		stroke: rgb(248,250,247); 
+		stroke-width: 1.5px;  
+		fill: rgb(187,207,178); 
+	}
+	
+	path:hover{
+		fill: rgb(255,216,136);  
+	}
+
+	.place-label {
+		font-family: Cambria, Georgia;
+		font-weight: normal;
+		font-size: 10pt; 
+		fill: #000;   
+		pointer-events:none; 
+	}
+
+        </style>
+    </head>
+    <body>
+	
+	<div id="svgcontainer"></div>
+	
+	<!--this svg element contains information for making the shadow around the state -->
+<svg id="svgdefs" style="left: 0px; top: 0px;
+  position: relative;" width="0" height="0" 
+  xmlns="http://www.w3.org/2000/svg" version="1.1" >
+<defs>
+    <filter id="dropshadow" height="130%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="4"/> 
+      <feOffset dx="3" dy="3" result="offsetblur"/> 
+      <feMerge> 
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/> 
+      </feMerge>
+    </filter>
+  </defs>
+</svg>
+		
+        <script type="text/javascript">
+
+		//Width and height
+            var w = 700;
+            var h = 520;
+			
+	//projection specific to Colorado
+	var projection = d3.geo.transverseMercator()
+	    .translate([(w / 2)-10, (h / 2)-15])
+		.scale(6500)
+	    .rotate([105.63, -39.18, 0])
+		.center([0, 0]);  
+								   
+            //Define path generator
+            var path = d3.geo.path()
+                             .projection(projection);
+
+            //Create SVG element
+            var svg = d3.select("#svgcontainer")
+                        .append("svg")
+						.attr("id","statesvg")
+                        .attr("width", w)
+                        .attr("height", h);
+
+			//create group element, add map
+			var map = svg.append("svg:g") 
+                .attr("id", "map")
+				.style("filter", "url(#dropshadow)");  //adds shadow to the state from definition in svgdefs
+
+				
+			//create group element for labels (created after map, so that it draws on top of map)	
+			var labels = svg.append("svg:g") 
+                .attr("id", "labels"); 	
+				
+            //Load in GeoJSON data
+            d3.json("geojson/County.geojson", function(json) {
+			
+                //Bind data and create one path per GeoJSON feature
+                map.selectAll("path")
+                   .data(json.features)
+                   .enter()
+                   .append("path")
+                   .attr("d", path)
+				   .on('click' , function(d){ click_sub(d.properties.NAME, d.properties.GEOID); });  //click event passes county name and geoid to subroutine
+				   
+				//add label for each feature   
+				labels.selectAll("text") 
+					.data(json.features) 
+					.enter()
+					.append("text") 
+					.attr("class", "place-label")
+					.attr("text-anchor", "middle")
+					.text(function(d){return d.properties.NAME;}) 
+					.attr("x", function(d){return projection([d.properties.x,d.properties.y])[0];}) 
+					.attr("y", function(d){return projection([d.properties.x,d.properties.y])[1];}) 
+					.attr("dy", "0.5em");   	   
+				   
+            });
+			
+			//this is the OnClick function.  Replace console text with action code.
+			function click_sub(county, geoid){
+			console.log(county + ", " + geoid);
+			}		
+
+        </script>
+
+    </body>
+</html>
