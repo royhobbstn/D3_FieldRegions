@@ -9,24 +9,52 @@
 <script src="http://d3js.org/d3.geo.projection.v0.min.js" charset="utf-8"></script>
 
         <style type="text/css">
-		
-	path{
-		stroke: rgb(248,250,247); 
+
+  .county{
+		fill: rgb(232,255,223); 
+    pointer-events:none; 
+	}
+          
+	.fr{
+		stroke: rgb(100,100,100); 
 		stroke-width: 1.5px;  
-		fill: rgb(187,207,178); 
+    fill: rgb(0,255,0);
+    fill-opacity: 0.05;
 	}
 	
-	path:hover{
-		fill: rgb(255,216,136);  
+	.fr:hover{
+		stroke: rgb(0,0,0); 
+		stroke-width: 2px;  
+    fill-opacity: 0;    
 	}
 
 	.place-label {
 		font-family: Cambria, Georgia;
-		font-weight: normal;
-		font-size: 10pt; 
-		fill: #000;   
+		font-size: 8pt; 
+		fill: #999;   
 		pointer-events:none; 
 	}
+   
+   .region-label{
+    font-weight: bold;
+    font-size: 12pt; 
+		fill: #111;   
+		pointer-events:none; 
+    }
+          
+.tooltip{
+  border: 1px solid black;
+  background-color: white;
+  border-radius: 5px;
+}
+
+          .lrg{
+            font-weight: bold;
+          }
+          
+          .regname{
+            color: #780000;
+          }
 
         </style>
     </head>
@@ -52,6 +80,18 @@
 		
         <script type="text/javascript">
 
+         function close_popup(){
+       var elem=document.getElementById('toolt');
+  elem.style.display='none';
+}         
+          
+          
+          d3.selection.prototype.moveToFront = function() {
+  return this.each(function(){
+  this.parentNode.appendChild(this);
+  });
+};
+          
 		//Width and height
             var w = 700;
             var h = 520;
@@ -79,11 +119,29 @@
                 .attr("id", "map")
 				.style("filter", "url(#dropshadow)");  //adds shadow to the state from definition in svgdefs
 
-				
+			//create group element, add map
+			var regions = svg.append("svg:g") 
+                .attr("id", "regions");
+          
+          
 			//create group element for labels (created after map, so that it draws on top of map)	
 			var labels = svg.append("svg:g") 
                 .attr("id", "labels"); 	
+          
+          var reglabels= svg.append("svg:g") 
+                .attr("id", "reglabels"); 	
 				
+
+          var tooltip = d3.select('body').append('div')
+          .attr("id","toolt")
+  .style('position','absolute')
+  .style('padding','3px 13px')
+  .style('display', 'none')
+          .style("color","#222")
+  .attr('class','tooltip');
+          
+
+          
             //Load in GeoJSON data
             d3.json("geojson/County.geojson", function(json) {
 			
@@ -93,7 +151,10 @@
                    .enter()
                    .append("path")
                    .attr("d", path)
-				   .on('click' , function(d){ click_sub(d.properties.NAME, d.properties.GEOID); });  //click event passes county name and geoid to subroutine
+                .style("stroke-dasharray", ("3, 3"))
+                .style("stroke-width", "0.5px")
+                .style("stroke", "rgb(150,150,150)")
+                .classed("county", true);
 				   
 				//add label for each feature   
 				labels.selectAll("text") 
@@ -106,14 +167,106 @@
 					.attr("x", function(d){return projection([d.properties.x,d.properties.y])[0];}) 
 					.attr("y", function(d){return projection([d.properties.x,d.properties.y])[1];}) 
 					.attr("dy", "0.5em");   	   
-				   
+              
+				   var insertLinebreaks = function (d) {
+    var el = d3.select(this);
+    var words = d.properties.NAME.split('|');
+    el.text('');
+
+    for (var i = 0; i < words.length; i++) {
+        var tspan = el.append('tspan').text(words[i]);
+        if (i > 0)
+            tspan.attr('x', projection([d.properties.x,d.properties.y])[0]).attr('dy', '10');
+    }
+};
+
+svg.selectAll('text').each(insertLinebreaks);
+              
+              d3.json("geojson/fieldregions.geojson", function(gjson) {
+                
+                //Bind data and create one path per GeoJSON feature
+                regions.selectAll("path")
+                   .data(gjson.features)
+                   .enter()
+                   .append("path")
+                   .attr("d", path)
+                .classed("fr", true)
+                 .on("mouseover",function(){
+      var sel = d3.select(this);
+      sel.moveToFront();
+    })
+				   .on('click' , function(d){ click_sub(d); });
+
+                
+         //add label for each feature   
+				reglabels.selectAll("text") 
+					.data(gjson.features) 
+					.enter()
+					.append("text") 
+					.attr("class", "region-label")
+					.attr("text-anchor", "middle")
+					.text(function(d){return d.properties.FieldReg_N;}) 
+					.attr("x", function(d){return projection([d.properties.x,d.properties.y])[0];}) 
+					.attr("y", function(d){return projection([d.properties.x,d.properties.y])[1];}) 
+					.attr("dy", "0.5em");   	   
+                
+                
+    var insertLinebreaks2 = function (d) {
+    var el = d3.select(this);
+    var words = d.properties.FieldReg_N.split('|');
+    el.text('');
+
+    for (var i = 0; i < words.length; i++) {
+        var tspan = el.append('tspan').text(words[i]);
+        if (i > 0)
+            tspan.attr('x', projection([d.properties.x,d.properties.y])[0]).attr('dy', '17');
+    }
+};
+
+svg.selectAll('.region-label').each(insertLinebreaks2);
+                
+                
+                
+              });
+              
             });
 			
+  
+  
+  
 			//this is the OnClick function.  Replace console text with action code.
-			function click_sub(county, geoid){
-			console.log(county + ", " + geoid);
+			function click_sub(d){
+       
+      tooltip.html( getHTML(d.properties.FieldReg_N))
+        .style('left',d3.event.x + 'px')
+        .style('top', d3.event.y + 'px');
+        
+          tooltip.append('img').attr('id','closebtn').style('position','absolute').style('top','5px').style('right','5px').attr('src','img/closebtn.png').attr('onclick','close_popup();');
 			}		
 
+          function getHTML(fieldreg){
+              var elem=document.getElementById('toolt');
+              elem.style.display='block';
+            
+            if(fieldreg=="South Central"){return "<p class='lrg'><span class='regname'>SOUTH CENTRAL</span><br />Christy Culp</p><address>610 State Ave., Suite 203<br />P.O. Box 1660<br />Alamosa, CO 81101</address><p>Office: <i>719-589-2251</i><br />Fax: <i>719-589-6299</i><br />Cell: <i>719-580-1313</i></p><a href= 'mailto:christy.culp@state.co.us'>christy.culp@state.co.us</a>"}
+            
+            if(fieldreg=="Southwestern"){return "<p class='lrg'><span class='regname'>SOUTHWESTERN</span><br />Ken Charles</p><address>Fort Lewis College<br />1000 Rim Dr.<br />Durango, CO  81301</address><p>Office: <i>970-247-7311</i><br />Fax: <i>970-247-7032</i><br />Cell: <i>970-749-1038</i></p><a href= 'mailto:ken.charles@state.co.us'>ken.charles@state.co.us</a>"}
+            
+            if(fieldreg=="Southeastern"){return "<p class='lrg'><span class='regname'>SOUTHEASTERN</span><br />Lee Merkel</p><address>132 West 'B' St., Ste. 260<br />Pueblo, CO  81003<br /></address><p>Office: <i>719-544-6577</i><br />Fax: <i>719-545-1876</i><br />Cell: <i>719-544-6577</i></p><a href= 'mailto:lee.merkel@state.co.us'>lee.merkel@state.co.us</a>"}
+            
+            if(fieldreg=="Northwestern"){return "<p class='lrg'><span class='regname'>NORTHWESTERN</span><br />Elyse Ackerman</p><address>222 S. 6th St., Rm. 409<br />Grand Junction, CO  81501</address><p>Office: <i>970-248-7333</i><br />Fax: <i>970-248-7317</i><br />Cell: <i>970-640-0475</i></p><a href= 'mailto:elyse.ackerman@state.co.us'>elyse.ackerman@state.co.us</a>"}
+            
+            if(fieldreg=="Northern|Mountains"){return "<p class='lrg'><span class='regname'>NORTHERN MOUNTAINS</span><br />Greg Winkler</p><address>P.O. Box 687<br />Lake George, CO  80827-0687</address><p>Office: <i>970-668-6160</i><br />Fax: <i>970-668-3216</i><br />Cell: <i>970-744-0760</i></p><a href= 'mailto:greg.winkler@state.co.us'>greg.winkler@state.co.us</a>"}
+            
+            if(fieldreg=="Northeastern"){return "<p class='lrg'><span class='regname'>NORTHEASTERN</span><br />Greg Etl</p><address>P.O. Box 1191<br />Sterling, CO  80751</address><p>Office: <i>970-521-2414</i><br />Fax: <i>970-521-2415</i><br />Cell: <i>970-380-0465</i></p><a href= 'mailto:greg.etl@state.co.us'>greg.etl@state.co.us</a>"}
+            
+            if(fieldreg=="North Central"){return "<p class='lrg'><span class='regname'>NORTH CENTRAL</span><br />Don Sandoval</p><address>150 E. 29th St., Ste 215<br />Loveland, CO  80538</address><p>Office: <i>970-679-4501</i><br />Fax: <i>970-679-4500</i><br />Cell: <i>970-679-7679</i></p><a href= 'mailto:don.sandoval@state.co.us'>don.sandoval@state.co.us</a>"}
+            
+            if(fieldreg=="Central"){return "<p class='lrg'><span class='regname'>CENTRAL</span><br />Clay Brown</p><address>15220 S. Golden Rd.<br />Golden, CO  80401</address><p>Office: <i>303-273-1787</i><br />Fax: <i>303-273-1795</i><br />Cell: <i>303-916-1722</i></p><a href= 'mailto:clay.brown@state.co.us'>clay.brown@state.co.us</a>"}            
+          }
+  
+
+          
         </script>
 
     </body>
