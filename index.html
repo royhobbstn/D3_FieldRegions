@@ -11,14 +11,12 @@
         <style type="text/css">
 
   .county{
-		fill: rgb(232,255,223); 
     pointer-events:none; 
 	}
           
 	.fr{
 		stroke: rgb(100,100,100); 
 		stroke-width: 1.5px;  
-    fill: rgb(0,255,0);
     fill-opacity: 0.05;
 	}
 	
@@ -140,6 +138,165 @@
           .style("color","#222")
   .attr('class','tooltip');
           
+          function get_county_color(d){
+            
+           var county_name = d.properties.NAME;
+            
+            var ret_color=0;  //easy to see pieces not in switch
+            
+switch (county_name) {
+    case 'Saguache':
+        ret_color = 4; break;
+    case 'Sedgwick':
+        ret_color = 7; break;
+    case 'Cheyenne':
+        ret_color = 7; break;
+    case 'Custer':
+        ret_color = 4; break;    
+    case 'La|Plata':
+        ret_color = 1; break;
+    case 'San|Juan':
+        ret_color = 1; break;    
+    case 'Pitkin':
+        ret_color = 2; break;
+    case 'Park':
+        ret_color = 2; break;
+     case 'Alamosa':
+        ret_color = 4; break;
+    case 'Prowers':
+        ret_color = 8; break;
+    case 'Moffat':
+        ret_color = 5; break;
+    case 'Jefferson':
+        ret_color = 3; break;
+    case 'Summit':
+        ret_color = 2; break;
+    case 'Pueblo':
+        ret_color = 8; break;    
+    case 'Boulder':
+        ret_color = 6; break;
+    case 'Denver':
+        ret_color = 3; break;    
+    case 'Montrose':
+        ret_color = 1; break;
+    case 'Eagle':
+        ret_color = 2; break;
+     case 'San Miguel':
+        ret_color = 1; break;
+    case 'Costilla':
+        ret_color = 4; break;    
+    case 'Broomfield':
+        ret_color = 6; break;
+    case 'Chaffee':
+        ret_color = 4; break;
+    case 'Crowley':
+        ret_color = 8; break;
+    case 'Fremont':
+        ret_color = 4; break;    
+    case 'Huerfano':
+        ret_color = 8; break;
+    case 'Delta':
+        ret_color = 5; break;    
+    case 'Garfield':
+        ret_color = 5; break;
+    case 'Rio Blanco':
+        ret_color = 5; break;
+     case 'Morgan':
+        ret_color = 7; break;
+    case 'Lincoln':
+        ret_color = 7; break;
+    case 'Montezuma':
+        ret_color = 1; break;
+    case 'Adams':
+        ret_color = 6; break;
+    case 'Mineral':
+        ret_color = 4; break;
+    case 'Otero':
+        ret_color = 8; break;    
+    case 'Phillips':
+        ret_color = 7; break;
+    case 'Ouray':
+        ret_color = 1; break;    
+    case 'Bent':
+        ret_color = 8; break;
+    case 'Archuleta':
+        ret_color = 1; break;
+     case 'Routt':
+        ret_color = 2; break;
+    case 'Hinsdale':
+        ret_color = 5; break;
+    case 'Weld':
+        ret_color = 6; break;
+    case 'Larimer':
+        ret_color = 6; break;
+    case 'Lake':
+        ret_color = 4; break;
+    case 'Rio|Grande':
+        ret_color = 4; break;    
+    case 'Gilpin':
+        ret_color = 6; break;
+    case 'Yuma':
+        ret_color = 7; break;    
+    case 'Jackson':
+        ret_color = 2; break;
+    case 'Kit|Carson':
+        ret_color = 7; break;
+     case 'Clear|Creek':
+        ret_color = 3; break;
+    case 'Logan':
+        ret_color = 7; break;
+    case 'Washington':
+        ret_color = 7; break;
+    case 'Douglas':
+        ret_color = 3; break;
+    case 'Conejos':
+        ret_color = 4; break;
+    case 'El|Paso':
+        ret_color = 3; break;    
+    case 'Kiowa':
+        ret_color = 8; break;
+    case 'Teller':
+        ret_color = 3; break;    
+    case 'Gunnison':
+        ret_color = 5; break;
+    case 'Baca':
+        ret_color = 8; break;
+     case 'Elbert':
+        ret_color = 3; break;
+    case 'Mesa':
+        ret_color = 5; break;
+    case 'Dolores':
+        ret_color = 1; break;
+    case 'Arapahoe':
+        ret_color = 3; break;
+    case 'Las|Animas':
+        ret_color = 8; break;
+    case 'Grand':
+        ret_color = 2; break;    
+
+}
+            
+          /*  if(ret_color==0){return 'black';}
+            if(ret_color==1){return 'rgb(141,211,199)'};
+            if(ret_color==2){return 'rgb(190,186,218)';}
+            if(ret_color==3){return 'rgb(255,255,179)';}
+            if(ret_color==4){return 'rgb(128,177,211)';}
+            if(ret_color==5){return 'rgb(255,190,190)';}
+            if(ret_color==6){return 'rgb(244,215,252)';}
+            if(ret_color==7){return 'rgb(179,222,105)';}
+            if(ret_color==8){return 'rgb(252,205,229)';}           */ 
+
+            if(ret_color==0){return 'black';}
+            if(ret_color==1){return 'rgb(198,233,227)'};
+            if(ret_color==2){return 'rgb(223,221,237)';}
+            if(ret_color==3){return 'rgb(255,255,217)';}
+            if(ret_color==4){return 'rgb(192,216,233)';}
+            if(ret_color==5){return 'rgb(255,223,223)';}
+            if(ret_color==6){return 'rgb(250,235,254)';}
+            if(ret_color==7){return 'rgb(217,239,180)';}
+            if(ret_color==8){return 'rgb(254,230,242)';}      
+            
+          }
 
           
             //Load in GeoJSON data
@@ -154,6 +311,7 @@
                 .style("stroke-dasharray", ("3, 3"))
                 .style("stroke-width", "0.5px")
                 .style("stroke", "rgb(150,150,150)")
+                .style("fill", function(d){return get_county_color(d);})
                 .classed("county", true);
 				   
 				//add label for each feature   
